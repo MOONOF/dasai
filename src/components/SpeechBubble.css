@@ -1,0 +1,61 @@
+.speech-bubble {
+  position: absolute;
+  top: 50%;
+  left: -200px; /* 放在左侧 */
+  transform: translateY(-50%);
+  background-color: white;
+  border-radius: 20px;
+  padding: 12px 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 200px;
+  z-index: 100;
+  text-align: left;
+  cursor: pointer;
+  border: 2px solid var(--pet-color, #4A90E2);
+}
+
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -10px; /* 箭头指向右侧 */
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-left: 10px solid white; /* 左侧箭头 */
+}
+
+.speech-bubble-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* 添加悬停效果 */
+.speech-bubble:hover {
+  transform: translateY(-50%) scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.speech-bubble-enter {
+  opacity: 0;
+  transform: translateY(20px) scale(0.8);
+}
+
+.speech-bubble-enter-active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.speech-bubble-exit {
+  opacity: 1;
+}
+
+.speech-bubble-exit-active {
+  opacity: 0;
+  transform: translateY(-20px) scale(0.8);
+  transition: opacity 300ms, transform 300ms;
+}
