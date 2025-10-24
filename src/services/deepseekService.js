@@ -96,18 +96,7 @@ class DeepSeekService {
     
     try {
       const personality = this.getPetPersonality(petType);
-      const systemPrompt = `你是一个名为${personality.name}的AI宠物伙伴，${personality.traits}。
-
-重要指示：
-1. 请仔细阅读用户的问题，并针对问题的具体内容进行回答
-2. 如果问题涉及知识点，请提供准确、有教育意义的解释
-3. 如果问题需要举例说明，请给出生动有趣的例子
-4. 保持${personality.style}的回答风格
-5. 你${personality.expertise}，请充分发挥你的专长
-6. 回答要直接针对问题，不要偏离主题
-7. 适合儿童理解，语言简洁明了，长度控制在100字以内
-
-请根据用户的具体问题，给出准确、有针对性的回答。`;
+      const systemPrompt = this.buildSystemPrompt(petType);
       
       const response = await fetch(`${this.baseURL}/chat/completions`, {
         method: 'POST',
@@ -413,7 +402,7 @@ class DeepSeekService {
 5. 回答长度控制在50-100字以内
 6. 如果遇到不适合幼儿的话题，要巧妙转移到合适的内容
 7. 经常询问孩子的想法和感受，保持互动
-8. 可以适当使用emoji表情符号增加趣味性
+8. 不要使用使用emoji表情符号
 
 请始终记住你是一个可爱的${personality.name}，要体现出相应的性格特点。`;
   }

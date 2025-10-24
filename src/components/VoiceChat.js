@@ -98,7 +98,7 @@ const VoiceChat = ({
           setCurrentText(finalTranscript);
           setTimeout(() => {
             handleVoiceMessage(finalTranscript);
-          }, 300); // 延迟1秒，让用户看到识别结果
+          }, 1000); // 延迟1秒，让用户看到识别结果
         }
       };
 
@@ -203,10 +203,22 @@ const VoiceChat = ({
     }
   };
 
+  const handleClickRePlay = (message) => {
+    // 暂停播放
+    ttsService.stopCurrentAudio();
+    console.log('点击了重新播放:', message);
+    // 调用TTS播放消息文本
+    speakText(message.text);
+  };
+
   // 监听messages变化，自动滚动到底部
   useEffect(() => {
     scrollToBottom();
-  }, [messages, scrollToBottom]);
+  }, [messages,currentText,scrollToBottom]);
+
+  useEffect(()=>{
+    scrollToBottom();
+  },[])
 
   // 处理语音消息
   const handleVoiceMessage = useCallback(async (text) => {
@@ -214,9 +226,9 @@ const VoiceChat = ({
 
     setIsProcessing(true);
     // 延迟清空currentText，让用户看到识别结果
-    setTimeout(() => {
-      setCurrentText('');
-    }, 500);
+    // setTimeout(() => {
+    setCurrentText('');
+    // }, 500);
 
     const userMessage = {
       id: Date.now(),
@@ -334,6 +346,9 @@ const VoiceChat = ({
                 <div className="message-content">
                   {message.text}
                 </div>
+                {message.sender != 'user' && <div className="message-timestamp" onClick={() => handleClickRePlay(message)}>
+                  <img style={{ width: '24px', height: '24px', objectFit: 'cover', borderRadius: '50%' }} src={"/喇叭.png"} alt={message.sender} />
+                </div>}
               </motion.div>
             ))}
 

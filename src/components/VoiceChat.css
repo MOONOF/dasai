@@ -106,6 +106,7 @@
 .message.pet {
   align-self: flex-start;
   justify-content: flex-start;
+  position: relative;
 }
 
 .message-content {
@@ -186,6 +187,15 @@
 .processing-dots {
   display: flex;
   gap: 4px;
+}
+
+.message-timestamp{
+  position: absolute;
+  bottom: 0px;
+  right: -30px;
+  font-size: 0.8rem;
+  z-index: 11;
+  cursor: pointer;
 }
 
 .processing-dots span {

@@ -56,30 +56,14 @@ const MainPage = ({ selectedPet }) => {
     handleOpenChat();
     
     // 直接发送气泡内容给大模型生成问题
-    if (bubbleMessage) {
+    if (bubbleMessage && conversationHistory?.length == 0) {
       try {
         // 设置加载状态
         setIsLoading(true);
         
-        // 1. 发送气泡内容给大模型，生成问题
-        const generatedQuestion = await deepseekService.generateQuestionFromBubble(bubbleMessage);
-        
-        // 添加用户问题到对话历史
-        const userMessage = {
-          role: 'user',
-          content: generatedQuestion,
-          timestamp: new Date().toISOString()
-        };
-        
-        setConversationHistory(prev => [...prev, userMessage]);
-        
-        // 2. 发送生成的问题给大模型获取回答
-        const aiResponse = await deepseekService.chatWithPet(generatedQuestion, selectedPet.id);
-        
-        // 添加AI回答到对话历史
         const aiMessage = {
           role: 'assistant',
-          content: aiResponse,
+          content: bubbleMessage,
           timestamp: new Date().toISOString()
         };
         
@@ -87,7 +71,7 @@ const MainPage = ({ selectedPet }) => {
         
         // 3. 播放AI回答的语音
         setTimeout(() => {
-          speakText(aiResponse, selectedPet.id);
+          speakText(bubbleMessage, selectedPet.id);
         }, 500);
         
       } catch (error) {
@@ -356,6 +340,7 @@ const MainPage = ({ selectedPet }) => {
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
+              onClick={handleBubbleClick}
               onMouseEnter={handleMediaMouseEnter}
               onMouseLeave={handleMediaMouseLeave}
             >

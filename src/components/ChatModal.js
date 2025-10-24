@@ -67,6 +67,38 @@ const ChatModal = ({
     }
   };
 
+  // 强制清理所有语音识别相关状态
+  const forceCleanupRecognition = () => {
+    console.log('强制清理语音识别状态');
+    
+    // 清理定时器
+    clearTimeout(silenceTimerRef.current);
+    
+    // 重置状态
+    setIsRecording(false);
+    
+    // 清理实例
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort(); // 使用abort而不是stop，更彻底
+      } catch (error) {
+        console.log('强制停止语音识别时出错:', error);
+      }
+      
+      // 移除所有事件监听器
+      try {
+        recognitionRef.current.onstart = null;
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.onerror = null;
+        recognitionRef.current.onend = null;
+      } catch (error) {
+        console.log('清理事件监听器时出错:', error);
+      }
+      
+      recognitionRef.current = null;
+    }
+  };
+
   const currentPet = petConfig[selectedPet] || petConfig.fox;
 
   // 初始化欢迎消息
@@ -104,10 +136,7 @@ const ChatModal = ({
   // 组件卸载时清理语音识别
   useEffect(() => {
     return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-      clearTimeout(silenceTimerRef.current);
+      forceCleanupRecognition();
     };
   }, []);
 
@@ -272,12 +301,14 @@ const ChatModal = ({
       console.error('语音识别错误:', event.error);
       setIsRecording(false);
       clearTimeout(silenceTimerRef.current);
+      forceCleanupRecognition();
     };
 
     recognitionRef.current.onend = () => {
       console.log('语音识别结束');
       setIsRecording(false);
       clearTimeout(silenceTimerRef.current);
+      forceCleanupRecognition();
     };
 
     recognitionRef.current.start();
@@ -290,12 +321,14 @@ const ChatModal = ({
       recognitionRef.current.stop();
     }
     clearTimeout(silenceTimerRef.current);
+    forceCleanupRecognition();
     setIsRecording(false);
   };
 
   // 重置静音计时器
   const resetSilenceTimer = () => {
     clearTimeout(silenceTimerRef.current);
+    forceCleanupRecognition();
     silenceTimerRef.current = setTimeout(() => {
       console.log('检测到3秒静音，自动发送消息');
       stopVoiceRecognition();
