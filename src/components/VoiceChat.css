@@ -163,6 +163,7 @@
 }
 
 .thinking-text {
+  text-align: left;
   color: var(--pet-color, #4A90E2);
   font-size: 14px;
   font-weight: 500;

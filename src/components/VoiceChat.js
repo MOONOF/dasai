@@ -6,12 +6,11 @@ import './VoiceChat.css';
 import deepseekService from '../services/deepseekService';
 import ttsService from '../services/ttsService';
 
-const VoiceChat = ({ 
-  isOpen, 
-  onClose, 
-  selectedPet, 
-  onSendMessage,
-  conversationHistory = []
+const VoiceChat = ({
+  isOpen,
+  onClose,
+  selectedPet,
+  onSendMessage, conversationHistory = []
 }) => {
   const [messages, setMessages] = useState([]);
   const [isListening, setIsListening] = useState(false);
@@ -93,7 +92,7 @@ const VoiceChat = ({
         }
 
         setCurrentText(interimTranscript);
-        
+
         if (finalTranscript) {
           // 先显示最终识别结果，延迟一段时间后再处理消息
           setCurrentText(finalTranscript);
@@ -127,7 +126,7 @@ const VoiceChat = ({
       try {
         console.log('🔊 VoiceChat speakText调用:', { text, selectedPet });
         await ttsService.playText(
-          text, 
+          text,
           selectedPet,
           () => {
             console.log('🎬 VoiceChat TTS播放开始');
@@ -152,7 +151,7 @@ const VoiceChat = ({
   // 处理发送消息
   const handleSendMessage = async (text) => {
     if (!text.trim()) return;
-    
+
     // 添加用户消息
     const userMessage = {
       id: Date.now(),
@@ -160,21 +159,21 @@ const VoiceChat = ({
       sender: 'user',
       timestamp: new Date()
     };
-    
+
     setMessages(prev => [...prev, userMessage]);
-    
+
     // 通知父组件
     if (onSendMessage) {
       onSendMessage(text);
     }
-    
+
     // 设置处理中状态
     setIsProcessing(true);
-    
+
     try {
       // 调用AI服务获取回复
       const response = await deepseekService.chatWithPet(text, selectedPet);
-      
+
       // 添加AI回复消息
       const aiMessage = {
         id: Date.now() + 1,
@@ -182,14 +181,14 @@ const VoiceChat = ({
         sender: 'pet',
         timestamp: new Date()
       };
-      
+
       setMessages(prev => [...prev, aiMessage]);
-      
+
       // 语音播放AI回复
       speakText(response);
     } catch (error) {
       console.error('获取AI回复失败:', error);
-      
+
       // 添加错误消息
       const errorMessage = {
         id: Date.now() + 1,
@@ -197,7 +196,7 @@ const VoiceChat = ({
         sender: 'pet',
         timestamp: new Date()
       };
-      
+
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsProcessing(false);
@@ -229,21 +228,23 @@ const VoiceChat = ({
     setMessages(prev => [...prev, userMessage]);
 
     try {
+      // const response = await onSendMessage(text, selectedPet);
+
       // 直接调用deepseekService获取AI回复，而不是使用onSendMessage回调
       const response = await deepseekService.chatWithPet(text, selectedPet);
-      
+
       const petMessage = {
         id: Date.now() + 1,
         text: response || '哇，这个问题很有趣呢！让我想想怎么回答你...',
         sender: 'pet',
         timestamp: new Date()
       };
-      
+
       setMessages(prev => [...prev, petMessage]);
-      
+
       // 语音播放回复
       speakText(petMessage.text);
-      
+
     } catch (error) {
       const errorMessage = {
         id: Date.now() + 1,
@@ -275,7 +276,7 @@ const VoiceChat = ({
         ttsService.stopCurrentAudio();
         setIsSpeaking(false);
       }
-      
+
       recognitionRef.current.start();
       setIsListening(true);
       setCurrentText('');
@@ -289,14 +290,14 @@ const VoiceChat = ({
 
   return (
     <AnimatePresence>
-      <motion.div 
+      <motion.div
         className="voice-chat-overlay"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
       >
-        <motion.div 
+        <motion.div
           className="voice-chat-container"
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -307,8 +308,8 @@ const VoiceChat = ({
           {/* 头部控制区 */}
           <div className="voice-chat-header">
             <div className="pet-info">
-              <span className="pet-avatar" style={{ width: '50px', height: '50px',borderRadius: '50%' }}>
-                <img style={{ width: '100%', height: '100%', objectFit: 'cover',borderRadius: '50%' }} src={currentPet.id == 'fox' ? "/狐狸.png" : currentPet.id == 'owl' ? "/猫头鹰.png" : "/海豚.png"} alt={currentPet.name} />
+              <span className="pet-avatar" style={{ width: '50px', height: '50px', borderRadius: '50%' }}>
+                <img style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} src={currentPet.id == 'fox' ? "/狐狸.png" : currentPet.id == 'owl' ? "/猫头鹰.png" : "/海豚.png"} alt={currentPet.name} />
               </span>
             </div>
             <div className="controls">
@@ -333,7 +334,7 @@ const VoiceChat = ({
                 </div>
               </motion.div>
             ))}
-            
+
             {/* 实时语音转文字显示 */}
             {currentText && (
               <motion.div
@@ -349,25 +350,10 @@ const VoiceChat = ({
             )}
 
             {/* AI思考加载动画 */}
-            {isProcessing && (
-              <motion.div
-                className="ai-thinking-indicator"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-              >
-                <div className="thinking-animation">
-                  <Player
-                    autoplay
-                    loop
-                    src="/彩色加载loading2.json"
-                    style={{ height: '60px', width: '60px' }}
-                  />
-                </div>
-                <div className="thinking-text">
-                  AI正在思考中...
-                </div>
-              </motion.div>
-            )}
+            {/* {} */}
+            {isProcessing && <div className="thinking-text">
+              AI正在思考中...
+            </div>}
           </div>
 
           {/* 语音控制区 */}
@@ -380,7 +366,7 @@ const VoiceChat = ({
             >
               {isListening ? <MicOff size={24} /> : <Mic size={24} />}
               {isListening && (
-                <motion.div 
+                <motion.div
                   className="listening-pulse"
                   animate={{ scale: [1, 1.3, 1] }}
                   transition={{ duration: 1, repeat: Infinity }}

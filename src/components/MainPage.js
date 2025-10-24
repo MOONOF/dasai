@@ -23,21 +23,21 @@ const MainPage = ({ selectedPet }) => {
   // 视频ref
   const mainVideoRef = useRef(null);
   // 组件加载时播放欢迎语音
-  useEffect(() => {
-    // 测试TTS API
-    const testAPI = async () => {
-      const isAPIWorking = await ttsService.testAPI();
-      console.log('🧪 TTS API可用性:', isAPIWorking);
-    };
+  // useEffect(() => {
+  //   // 测试TTS API
+  //   const testAPI = async () => {
+  //     const isAPIWorking = await ttsService.testAPI();
+  //     console.log('🧪 TTS API可用性:', isAPIWorking);
+  //   };
     
-    testAPI();
+  //   testAPI();
     
-    const timer = setTimeout(() => {
-      speakText('你想和聪明的小狐狸茸茸、友好的小海豚闪闪，或者呆萌的小猫头鹰绒绒做朋友吗？');
-    }, 500);
+  //   const timer = setTimeout(() => {
+  //     speakText('你想和聪明的小狐狸茸茸、友好的小海豚闪闪，或者呆萌的小猫头鹰绒绒做朋友吗？');
+  //   }, 500);
 
-    return () => clearTimeout(timer);
-  }, []);
+  //   return () => clearTimeout(timer);
+  // }, []);
 
   // 生成宠物对话消息
   const generatePetMessage = async () => {
