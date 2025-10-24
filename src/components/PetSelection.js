@@ -160,22 +160,22 @@ const PetSelection = ({ selectedPet, setSelectedPet }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
-        {/* <motion.h1
+        <motion.h1
           className="title"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3, duration: 0.6 }}
         >
-          选择你的学习伙伴
-        </motion.h1> */}
+          学伴萌宠
+        </motion.h1>
 
         <motion.p
           className="subtitle"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5, duration: 0.6 }}
-        >
-          每个萌宠都有独特的性格，选择最适合你的学习伙伴吧！
+        > 
+          寓教于乐，情智共育
         </motion.p>
 
         <div className="pets-grid">

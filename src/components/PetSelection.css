@@ -20,20 +20,133 @@
 }
 
 .title {
-  font-size: 3rem;
-  font-weight: 700;
-  color: white;
+  font-size: 3.5rem;
+  font-weight: 600;
+  background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #fa7e84, #ff9ff3);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 1rem;
-  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  font-family: 'Microsoft YaHei', sans-serif;
+  text-shadow: 0 0 20px rgba(255, 107, 107, 0.3), 0 0 40px rgba(78, 205, 196, 0.2);
+  font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei UI', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  letter-spacing: 0.5px;
+  animation: rainbow-flow 3s ease-in-out infinite, bounce-gentle 2s ease-in-out infinite;
+  position: relative;
+}
+
+.title::before {
+  content: '✨';
+  position: absolute;
+  left: -2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 2rem;
+  animation: sparkle 1.5s ease-in-out infinite;
+}
+
+.title::after {
+  content: '✨';
+  position: absolute;
+  right: -2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 2rem;
+  animation: sparkle 1.5s ease-in-out infinite 0.75s;
 }
 
 .subtitle {
-  font-size: 1.5rem;
-  color: rgba(255, 107, 107, 0.8);
+  font-size: 1.8rem;
+  background: linear-gradient(135deg, #b15963, #fa7e84, #ff9ff3);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 3rem;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  font-family: "阿里妈妈东方大楷 Regular";font-variation-settings: normal;
+  text-shadow: 0 0 15px rgba(177, 89, 99, 0.3);
+  font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei UI', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 400;
+  letter-spacing: 1px;
+  animation: gradient-shift 4s ease-in-out infinite, float 3s ease-in-out infinite;
+  position: relative;
+}
+
+.subtitle::before {
+  content: '🌟';
+  position: absolute;
+  left: -1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  animation: twinkle 2s ease-in-out infinite;
+}
+
+.subtitle::after {
+  content: '🌟';
+  position: absolute;
+  right: -1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  animation: twinkle 2s ease-in-out infinite 1s;
+}
+
+@keyframes rainbow-flow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes bounce-gentle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translateY(-50%) scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.2);
+  }
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.4;
+    transform: translateY(-50%) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-50%) rotate(180deg);
+  }
 }
 
 .pets-grid {
