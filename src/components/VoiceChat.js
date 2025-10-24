@@ -10,7 +10,8 @@ const VoiceChat = ({
   isOpen, 
   onClose, 
   selectedPet, 
-  onSendMessage 
+  onSendMessage,
+  conversationHistory = []
 }) => {
   const [messages, setMessages] = useState([]);
   const [isListening, setIsListening] = useState(false);
@@ -21,6 +22,19 @@ const VoiceChat = ({
   const recognitionRef = useRef(null);
   const synthRef = useRef(null);
   const messagesContainerRef = useRef(null);
+
+  // 同步外部对话历史到内部messages状态
+  useEffect(() => {
+    if (conversationHistory && conversationHistory.length > 0) {
+      const formattedMessages = conversationHistory.map((msg, index) => ({
+        id: msg.timestamp ? new Date(msg.timestamp).getTime() : Date.now() + index,
+        text: msg.content,
+        sender: msg.role === 'user' ? 'user' : 'pet',
+        timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date()
+      }));
+      setMessages(formattedMessages);
+    }
+  }, [conversationHistory]);
 
   // 宠物信息配置
   const petConfig = {
@@ -81,8 +95,11 @@ const VoiceChat = ({
         setCurrentText(interimTranscript);
         
         if (finalTranscript) {
+          // 先显示最终识别结果，延迟一段时间后再处理消息
           setCurrentText(finalTranscript);
-          handleVoiceMessage(finalTranscript);
+          setTimeout(() => {
+            handleVoiceMessage(finalTranscript);
+          }, 1000); // 延迟1秒，让用户看到识别结果
         }
       };
 
@@ -132,19 +149,60 @@ const VoiceChat = ({
     }
   }, [isSpeaking, selectedPet]);
 
-  // 初始化欢迎消息
-  useEffect(() => {
-    if (isOpen && selectedPet && messages.length === 0) {
-      const welcomeMessage = {
-        id: Date.now(),
-        text: '你好！我是你的AI宠物伙伴，很高兴见到你！',
+  // 处理发送消息
+  const handleSendMessage = async (text) => {
+    if (!text.trim()) return;
+    
+    // 添加用户消息
+    const userMessage = {
+      id: Date.now(),
+      text: text,
+      sender: 'user',
+      timestamp: new Date()
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    
+    // 通知父组件
+    if (onSendMessage) {
+      onSendMessage(text);
+    }
+    
+    // 设置处理中状态
+    setIsProcessing(true);
+    
+    try {
+      // 调用AI服务获取回复
+      const response = await deepseekService.chatWithPet(text, selectedPet);
+      
+      // 添加AI回复消息
+      const aiMessage = {
+        id: Date.now() + 1,
+        text: response,
         sender: 'pet',
         timestamp: new Date()
       };
-      setMessages([welcomeMessage]);
-      speakText(welcomeMessage.text);
+      
+      setMessages(prev => [...prev, aiMessage]);
+      
+      // 语音播放AI回复
+      speakText(response);
+    } catch (error) {
+      console.error('获取AI回复失败:', error);
+      
+      // 添加错误消息
+      const errorMessage = {
+        id: Date.now() + 1,
+        text: '抱歉，我遇到了一点问题，请稍后再试。',
+        sender: 'pet',
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsProcessing(false);
     }
-  }, [isOpen, selectedPet, messages.length, speakText]);
+  };
 
   // 监听messages变化，自动滚动到底部
   useEffect(() => {
@@ -156,7 +214,10 @@ const VoiceChat = ({
     if (!text.trim()) return;
 
     setIsProcessing(true);
-    setCurrentText('');
+    // 延迟清空currentText，让用户看到识别结果
+    setTimeout(() => {
+      setCurrentText('');
+    }, 500);
 
     const userMessage = {
       id: Date.now(),
@@ -168,7 +229,8 @@ const VoiceChat = ({
     setMessages(prev => [...prev, userMessage]);
 
     try {
-      const response = await onSendMessage(text, selectedPet);
+      // 直接调用deepseekService获取AI回复，而不是使用onSendMessage回调
+      const response = await deepseekService.chatWithPet(text, selectedPet);
       
       const petMessage = {
         id: Date.now() + 1,
@@ -194,7 +256,7 @@ const VoiceChat = ({
     }
 
     setIsProcessing(false);
-  }, [onSendMessage, selectedPet, speakText]);
+  }, [selectedPet, speakText]);
 
   // 开始/停止语音识别
   const toggleListening = () => {
@@ -207,6 +269,13 @@ const VoiceChat = ({
       recognitionRef.current.stop();
       setIsListening(false);
     } else {
+      // 如果正在播放TTS，先停止播放再开始语音识别
+      if (isSpeaking) {
+        console.log('🛑 停止TTS播放以启动语音识别');
+        ttsService.stopCurrentAudio();
+        setIsSpeaking(false);
+      }
+      
       recognitionRef.current.start();
       setIsListening(true);
       setCurrentText('');

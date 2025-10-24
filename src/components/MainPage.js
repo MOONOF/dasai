@@ -4,16 +4,21 @@ import { useNavigate } from 'react-router-dom';
 
 
 import VoiceChat from './VoiceChat';
+import FloatingRobot from './FloatingRobot';
+import SpeechBubble from './SpeechBubble';
 import deepseekService from '../services/deepseekService';
 import ttsService from '../services/ttsService';
 import './MainPage.css';
 
 const MainPage = ({ selectedPet }) => {
+  const navigate = useNavigate();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [hoveredMedia, setHoveredMedia] = useState(null);
   const [conversationHistory, setConversationHistory] = useState([]);
   const [isPetHovered, setIsPetHovered] = useState(false);
-  const navigate = useNavigate();
+  const [showBubble, setShowBubble] = useState(false);
+  const [bubbleMessage, setBubbleMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   // 视频ref
   const mainVideoRef = useRef(null);
@@ -33,6 +38,88 @@ const MainPage = ({ selectedPet }) => {
 
     return () => clearTimeout(timer);
   }, []);
+
+  // 生成宠物对话消息
+  const generatePetMessage = async () => {
+    if (selectedPet && selectedPet.id) {
+      const message = await deepseekService.generatePetProactiveChatMessage(selectedPet.id);
+      setBubbleMessage(message);
+      setShowBubble(true);
+      
+      // 5秒后隐藏气泡
+      setTimeout(() => {
+        setShowBubble(false);
+      }, 5000);
+    }
+  };
+
+  // 处理气泡点击事件
+  const handleBubbleClick = async () => {
+    // 打开聊天框
+    handleOpenChat();
+    
+    // 直接发送气泡内容给大模型生成问题
+    if (bubbleMessage) {
+      try {
+        // 设置加载状态
+        setIsLoading(true);
+        
+        // 1. 发送气泡内容给大模型，生成问题
+        const generatedQuestion = await deepseekService.generateQuestionFromBubble(bubbleMessage);
+        
+        // 添加用户问题到对话历史
+        const userMessage = {
+          role: 'user',
+          content: generatedQuestion,
+          timestamp: new Date().toISOString()
+        };
+        
+        setConversationHistory(prev => [...prev, userMessage]);
+        
+        // 2. 发送生成的问题给大模型获取回答
+        const aiResponse = await deepseekService.chatWithPet(generatedQuestion, selectedPet.id);
+        
+        // 添加AI回答到对话历史
+        const aiMessage = {
+          role: 'assistant',
+          content: aiResponse,
+          timestamp: new Date().toISOString()
+        };
+        
+        setConversationHistory(prev => [...prev, aiMessage]);
+        
+        // 3. 播放AI回答的语音
+        setTimeout(() => {
+          speakText(aiResponse, selectedPet.id);
+        }, 500);
+        
+      } catch (error) {
+        console.error('处理气泡点击时出错:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  // 初始化和定时触发宠物对话
+  useEffect(() => {
+    if (selectedPet && selectedPet.id) {
+      // 页面加载后5秒显示第一条消息
+      const initialTimer = setTimeout(() => {
+        generatePetMessage();
+      }, 5000);
+
+      // 每10秒显示一条消息
+      const intervalTimer = setInterval(() => {
+        generatePetMessage();
+      }, 10000);
+
+      return () => {
+        clearTimeout(initialTimer);
+        clearInterval(intervalTimer);
+      };
+    }
+  }, [selectedPet]);
 
   const speakText = async (text, petType = 'fox') => {
     try {
@@ -257,6 +344,14 @@ const MainPage = ({ selectedPet }) => {
             onMouseEnter={() => setIsPetHovered(true)}
             onMouseLeave={() => setIsPetHovered(false)}
           >
+            {/* 宠物对话气泡 */}
+            <SpeechBubble 
+              isVisible={showBubble} 
+              message={bubbleMessage} 
+              petColor={themeStyles.primaryColor}
+              onClick={handleBubbleClick}
+            />
+            
             <motion.div
               className="pet-emoji-large"
               transition={{
@@ -336,7 +431,12 @@ const MainPage = ({ selectedPet }) => {
 
       </div>
 
-
+      {/* 浮动机器人助手 */}
+      <FloatingRobot 
+        onClick={handleOpenChat} 
+        petColor={themeStyles.primaryColor}
+        petType={selectedPet.id}
+      />
 
       {/* 语音对话界面 */}
       <VoiceChat
@@ -344,6 +444,7 @@ const MainPage = ({ selectedPet }) => {
         onClose={handleCloseChat}
         selectedPet={selectedPet.id}
         onSendMessage={handleSendMessage}
+        conversationHistory={conversationHistory}
       />
     </div>
   );

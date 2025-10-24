@@ -45,6 +45,183 @@ class DeepSeekService {
     };
     return personalities[petType] || personalities.fox;
   }
+  
+  // 从气泡内容生成问题
+  async generateQuestionFromBubble(bubbleContent) {
+    console.log('从气泡内容生成问题:', bubbleContent);
+    
+    try {
+      const response = await fetch(`${this.baseURL}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`
+        },
+        body: JSON.stringify({
+          model: this.model,
+          messages: [
+            {
+              role: 'system',
+              content: '你是一个教育助手，需要基于给定的内容生成一个有深度的问题。这个问题应该能够引导用户进一步思考和探索相关主题。'
+            },
+            {
+              role: 'user',
+              content: `基于以下内容，生成一个有深度的问题，问题应该简洁明了，不超过30个字：\n\n${bubbleContent}`
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 100
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.choices && data.choices[0] && data.choices[0].message) {
+        return data.choices[0].message.content.trim();
+      } else {
+        console.error('生成问题API返回格式错误:', data);
+        // 如果API调用失败，返回一个基于气泡内容的默认问题
+        return `关于"${bubbleContent}"，我想了解更多，能详细解释一下吗？`;
+      }
+    } catch (error) {
+      console.error('生成问题时出错:', error);
+      // 如果API调用出错，返回一个基于气泡内容的默认问题
+      return `关于"${bubbleContent}"，我想了解更多，能详细解释一下吗？`;
+    }
+  }
+  
+  // 与宠物聊天
+  async chatWithPet(message, petType) {
+    console.log('与宠物聊天:', message, petType);
+    
+    try {
+      const personality = this.getPetPersonality(petType);
+      const systemPrompt = `你是一个名为${personality.name}的AI宠物伙伴，${personality.traits}。
+
+重要指示：
+1. 请仔细阅读用户的问题，并针对问题的具体内容进行回答
+2. 如果问题涉及知识点，请提供准确、有教育意义的解释
+3. 如果问题需要举例说明，请给出生动有趣的例子
+4. 保持${personality.style}的回答风格
+5. 你${personality.expertise}，请充分发挥你的专长
+6. 回答要直接针对问题，不要偏离主题
+7. 适合儿童理解，语言简洁明了，长度控制在100字以内
+
+请根据用户的具体问题，给出准确、有针对性的回答。`;
+      
+      const response = await fetch(`${this.baseURL}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`
+        },
+        body: JSON.stringify({
+          model: this.model,
+          messages: [
+            {
+              role: 'system',
+              content: systemPrompt
+            },
+            {
+              role: 'user',
+              content: message
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 200
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.choices && data.choices[0] && data.choices[0].message) {
+        return data.choices[0].message.content.trim();
+      } else {
+        console.error('聊天API返回格式错误:', data);
+        // 如果API调用失败，返回一个默认回答
+        return `抱歉，我现在有点迷糊了。能再说一遍你的问题吗？`;
+      }
+    } catch (error) {
+      console.error('聊天时出错:', error);
+      // 如果API调用出错，返回一个默认回答
+      return `抱歉，我现在有点迷糊了。能再说一遍你的问题吗？`;
+    }
+  }
+  
+  // 生成宠物主动对话内容
+  async generatePetProactiveChatMessage(petType) {
+    try {
+      const petPersonality = this.getPetPersonality(petType);
+      
+      // 构建提示词
+      const prompt = `作为${petPersonality.name}，${petPersonality.traits}，请生成一句简短的主动对话内容，用于吸引用户注意。${petPersonality.style}`;
+      
+      // 调用大模型API生成内容
+      if (this.apiKey) {
+        try {
+          const response = await fetch(`${this.baseURL}/chat/completions`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${this.apiKey}`
+            },
+            body: JSON.stringify({
+              model: this.model,
+              messages: [
+                {role: "system", content: prompt},
+                {role: "user", content: "请生成一句有趣的对话内容"}
+              ],
+              max_tokens: 100
+            })
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.choices && data.choices[0] && data.choices[0].message) {
+              return data.choices[0].message.content.trim();
+            }
+          }
+          console.log('API调用成功但返回格式不符合预期，使用预设消息');
+        } catch (error) {
+          console.error('调用API生成对话失败:', error);
+          console.log('使用预设消息作为备选');
+        }
+      }
+      
+      // 预设的消息，按宠物类型分类
+      const petMessages = {
+        fox: [
+          "嘿嘿，你知道吗？狐狸的尾巴可以帮助它们保持平衡哦！",
+          "哇！我刚刚想到一个超有趣的谜题，要不要一起来解一解？",
+          "呀！今天天气真好，适合学习新知识呢！有什么想问我的吗？",
+          "嘻嘻，我发现了一个有趣的科学小实验，想不想听听看？",
+          "哎呀，我刚刚在思考一个数学问题，你能帮我解答吗？"
+        ],
+        dolphin: [
+          "你今天感觉怎么样呀？需要我陪你聊聊天吗？",
+          "海洋里有那么多奇妙的事情，想听我分享一些吗？",
+          "嗨～我注意到你好像有点安静，一切都好吗？",
+          "今天学习顺利吗？如果有困难，我很乐意帮助你哦～",
+          "你知道吗？分享快乐可以让快乐加倍，有什么开心的事想告诉我吗？"
+        ],
+        owl: [
+          "你知道吗？猫头鹰的头可以旋转270度，这让我能看到更广阔的世界。",
+          "我刚刚在思考一个有趣的历史问题，要不要听听看？",
+          "智慧来源于思考和阅读，今天你读了什么有趣的东西吗？",
+          "有一句古老的谚语说：'知识就是力量'，你觉得这句话有道理吗？",
+          "我喜欢在安静的夜晚思考人生的意义，你有什么深刻的想法想分享吗？"
+        ]
+      };
+      
+      // 随机选择一条消息
+      const messages = petMessages[petType] || petMessages.fox;
+      return messages[Math.floor(Math.random() * messages.length)];
+      
+    } catch (error) {
+      console.error('生成宠物对话失败:', error);
+      return "嗨，想聊聊天吗？";  // 返回默认消息
+    }
+  }
 
   // 难度调整机制
   adjustDifficulty(subject, isCorrect) {
