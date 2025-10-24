@@ -208,7 +208,28 @@ const VoiceChat = ({
     ttsService.stopCurrentAudio();
     console.log('点击了重新播放:', message);
     // 调用TTS播放消息文本
-    speakText(message.text);
+    try {
+      const selectedPet = message.id;
+        ttsService.playText(
+          message.text,
+          selectedPet,
+          () => {
+            console.log('🎬 VoiceChat TTS播放开始');
+            setIsSpeaking(true);
+          },
+          () => {
+            console.log('🎬 VoiceChat TTS播放结束');
+            setIsSpeaking(false);
+          },
+          (error) => {
+            console.error('❌ VoiceChat TTS播放错误:', error);
+            setIsSpeaking(false);
+          }
+        );
+      } catch (error) {
+        console.error('❌ VoiceChat TTS播放失败:', error);
+        setIsSpeaking(false);
+      }
   };
 
   // 监听messages变化，自动滚动到底部
