@@ -56,6 +56,9 @@ const PetSelection = ({ selectedPet, setSelectedPet }) => {
   const foxVideoRef = useRef(null);
   const owlVideoRef = useRef(null);
   const patVideoRef = useRef(null);
+  
+  // 音频引用，用于跟踪当前播放的音频
+  const currentAudioRef = useRef(null);
 
   // 媒体控制函数
   const handleMediaMouseEnter = async (petId) => {
@@ -111,6 +114,9 @@ const PetSelection = ({ selectedPet, setSelectedPet }) => {
   // 本地音频播放函数
   const playLocalAudio = (petType) => {
     try {
+      // 先暂停之前的音频
+      pauseCurrentAudio();
+      
       // 根据宠物类型获取对应的本地MP3文件路径
       const audioFiles = {
         'fox': '/小狐狸选择.mp3',
@@ -121,12 +127,26 @@ const PetSelection = ({ selectedPet, setSelectedPet }) => {
       const audioSrc = audioFiles[petType];
       if (audioSrc) {
         const audio = new Audio(audioSrc);
+        currentAudioRef.current = audio; // 保存当前音频引用
         audio.play().catch(error => {
           console.error('本地音频播放失败:', error);
         });
       }
     } catch (error) {
       console.error('音频播放错误:', error);
+    }
+  };
+
+  // 暂停当前播放的音频
+  const pauseCurrentAudio = () => {
+    try {
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause();
+        currentAudioRef.current.currentTime = 0;
+        currentAudioRef.current = null;
+      }
+    } catch (error) {
+      console.error('音频暂停错误:', error);
     }
   };
 
@@ -140,6 +160,10 @@ const PetSelection = ({ selectedPet, setSelectedPet }) => {
 
   const handleStartLearning = () => {
     setShowPopup(false);
+    
+    // 暂停当前播放的音频
+    pauseCurrentAudio();
+    
     // 暂停播放所有视频
     [foxVideoRef, owlVideoRef, patVideoRef].forEach(videoRef => {
       if (videoRef.current) {
@@ -160,22 +184,22 @@ const PetSelection = ({ selectedPet, setSelectedPet }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
-        {/* <motion.h1
+        <motion.h1
           className="title"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3, duration: 0.6 }}
         >
-          选择你的学习伙伴
-        </motion.h1> */}
+          学伴萌宠
+        </motion.h1>
 
         <motion.p
           className="subtitle"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5, duration: 0.6 }}
-        >
-          每个萌宠都有独特的性格，选择最适合你的学习伙伴吧！
+        > 
+          寓教于乐，情智共育
         </motion.p>
 
         <div className="pets-grid">

@@ -98,7 +98,7 @@ const VoiceChat = ({
           setCurrentText(finalTranscript);
           setTimeout(() => {
             handleVoiceMessage(finalTranscript);
-          }, 1000); // 延迟1秒，让用户看到识别结果
+          }, 300); // 延迟1秒，让用户看到识别结果
         }
       };
 
@@ -226,6 +226,8 @@ const VoiceChat = ({
     };
 
     setMessages(prev => [...prev, userMessage]);
+
+    setIsListening(false);
 
     try {
       // const response = await onSendMessage(text, selectedPet);
