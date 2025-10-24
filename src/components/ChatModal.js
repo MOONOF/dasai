@@ -10,7 +10,9 @@ import {
   BookOpen,
   Calculator,
   Target,
-  TrendingUp
+  TrendingUp,
+  Play,
+  Pause
 } from 'lucide-react';
 import Player from 'react-lottie-player';
 import deepseekService from '../services/deepseekService';
@@ -34,6 +36,7 @@ const ChatModal = ({
   const [showLearningStats, setShowLearningStats] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
+  const [playingMessageId, setPlayingMessageId] = useState(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const recognitionRef = useRef(null);
@@ -306,28 +309,51 @@ const ChatModal = ({
   };
 
   // 语音朗读功能 - 使用TTS服务
-  const speakText = async (text) => {
+  const speakText = async (text, messageId = null) => {
     try {
-      console.log('🔊 ChatModal speakText调用:', { text, selectedPet });
+      console.log('🔊 ChatModal speakText调用:', { text, selectedPet, messageId });
       await ttsService.playText(
         text, 
         selectedPet,
         () => {
           console.log('🎬 ChatModal TTS播放开始');
           setIsSpeaking(true);
+          if (messageId) setPlayingMessageId(messageId);
         },
         () => {
           console.log('🎬 ChatModal TTS播放结束');
           setIsSpeaking(false);
+          setPlayingMessageId(null);
         },
         (error) => {
           console.error('❌ ChatModal TTS播放错误:', error);
           setIsSpeaking(false);
+          setPlayingMessageId(null);
         }
       );
     } catch (error) {
       console.error('❌ ChatModal TTS播放失败:', error);
       setIsSpeaking(false);
+      setPlayingMessageId(null);
+    }
+  };
+
+  // 播放/暂停消息音频
+  const toggleMessageAudio = async (message) => {
+    // 如果当前消息正在播放，则暂停
+    if (playingMessageId === message.id && isSpeaking) {
+      ttsService.stopCurrentAudio();
+      setIsSpeaking(false);
+      setPlayingMessageId(null);
+    } else {
+      // 停止当前播放的音频（如果有）
+      if (isSpeaking) {
+        ttsService.stopCurrentAudio();
+        setIsSpeaking(false);
+        setPlayingMessageId(null);
+      }
+      // 播放新的音频
+      await speakText(message.text, message.id);
     }
   };
 
@@ -511,27 +537,42 @@ const ChatModal = ({
                       </motion.span>
                     )}
                     {message.sender === 'pet' && !message.isStreaming && (
-                      <div className="message-decorations">
-                        {[...Array(3)].map((_, i) => (
-                          <motion.div
-                            key={i}
-                            className="decoration-sparkle"
-                            animate={{
-                              scale: [0, 1, 0],
-                              rotate: [0, 180, 360],
-                              opacity: [0, 1, 0]
-                            }}
-                            transition={{
-                              duration: 2,
-                              delay: i * 0.3,
-                              repeat: Infinity,
-                              repeatDelay: 3
-                            }}
-                          >
-                            <Sparkles size={8} />
-                          </motion.div>
-                        ))}
-                      </div>
+                      <>
+                        <div className="message-decorations">
+                          {[...Array(3)].map((_, i) => (
+                            <motion.div
+                              key={i}
+                              className="decoration-sparkle"
+                              animate={{
+                                scale: [0, 1, 0],
+                                rotate: [0, 180, 360],
+                                opacity: [0, 1, 0]
+                              }}
+                              transition={{
+                                duration: 2,
+                                delay: i * 0.3,
+                                repeat: Infinity,
+                                repeatDelay: 3
+                              }}
+                            >
+                              <Sparkles size={8} />
+                            </motion.div>
+                          ))}
+                        </div>
+                        <motion.button
+                          className={`message-audio-btn ${playingMessageId === message.id && isSpeaking ? 'playing' : ''}`}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => toggleMessageAudio(message)}
+                          title={playingMessageId === message.id && isSpeaking ? '暂停播放' : '播放消息'}
+                        >
+                          {playingMessageId === message.id && isSpeaking ? (
+                            <Pause size={16} />
+                          ) : (
+                            <Play size={16} />
+                          )}
+                        </motion.button>
+                      </>
                     )}
                   </div>
                   <div className="message-time">

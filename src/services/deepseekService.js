@@ -62,11 +62,11 @@ class DeepSeekService {
           messages: [
             {
               role: 'system',
-              content: '你是一个教育助手，需要基于给定的内容生成一个有深度的问题。这个问题应该能够引导用户进一步思考和探索相关主题。'
+              content: '你是一个小学教育助手，专门引导学生做语文和数学练习题。根据给定的内容，生成一个适合小学生的语文或数学题目，题目要有趣且具有教育意义。'
             },
             {
               role: 'user',
-              content: `基于以下内容，生成一个有深度的问题，问题应该简洁明了，不超过30个字：\n\n${bubbleContent}`
+              content: `基于以下内容"${bubbleContent}"，生成一个适合小学生的语文或数学练习题。如果内容与文字、阅读、写作相关，就出语文题；如果与数字、计算、逻辑相关，就出数学题。题目要简洁有趣，不超过50个字：`
             }
           ],
           temperature: 0.7,
@@ -80,13 +80,13 @@ class DeepSeekService {
         return data.choices[0].message.content.trim();
       } else {
         console.error('生成问题API返回格式错误:', data);
-        // 如果API调用失败，返回一个基于气泡内容的默认问题
-        return `关于"${bubbleContent}"，我想了解更多，能详细解释一下吗？`;
+        // 如果API调用失败，返回一个基于气泡内容的默认题目
+        return `请根据"${bubbleContent}"这个内容，写一个小故事或者算一道数学题吧！`;
       }
     } catch (error) {
       console.error('生成问题时出错:', error);
-      // 如果API调用出错，返回一个基于气泡内容的默认问题
-      return `关于"${bubbleContent}"，我想了解更多，能详细解释一下吗？`;
+      // 如果API调用出错，返回一个基于气泡内容的默认题目
+      return `请根据"${bubbleContent}"这个内容，写一个小故事或者算一道数学题吧！`;
     }
   }
   

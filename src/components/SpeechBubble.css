@@ -1,8 +1,8 @@
 .speech-bubble {
   position: absolute;
-  top: 50%;
-  left: -200px; /* 放在左侧 */
-  transform: translateY(-50%);
+  top: -20px; /* 定位到右上角 */
+  right: -220px; /* 放在右侧 */
+  transform: none; /* 移除垂直居中变换 */
   background-color: white;
   border-radius: 20px;
   padding: 12px 20px;
@@ -17,14 +17,14 @@
 .speech-bubble::after {
   content: '';
   position: absolute;
-  top: 50%;
-  right: -10px; /* 箭头指向右侧 */
+  top: 50%; /* 箭头在中间高度 */
+  left: -10px; /* 箭头在左侧 */
   transform: translateY(-50%);
   width: 0;
   height: 0;
   border-top: 10px solid transparent;
   border-bottom: 10px solid transparent;
-  border-left: 10px solid white; /* 左侧箭头 */
+  border-right: 10px solid white; /* 向左的箭头 */
 }
 
 .speech-bubble-text {
@@ -35,7 +35,7 @@
 
 /* 添加悬停效果 */
 .speech-bubble:hover {
-  transform: translateY(-50%) scale(1.05);
+  transform: scale(1.05);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 

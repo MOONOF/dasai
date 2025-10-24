@@ -46,10 +46,7 @@ const MainPage = ({ selectedPet }) => {
       setBubbleMessage(message);
       setShowBubble(true);
       
-      // 5秒后隐藏气泡
-      setTimeout(() => {
-        setShowBubble(false);
-      }, 5000);
+      // 移除隐藏气泡的逻辑，让气泡一直显示
     }
   };
 
@@ -104,12 +101,12 @@ const MainPage = ({ selectedPet }) => {
   // 初始化和定时触发宠物对话
   useEffect(() => {
     if (selectedPet && selectedPet.id) {
-      // 页面加载后5秒显示第一条消息
+      // 页面加载后2秒显示第一条消息
       const initialTimer = setTimeout(() => {
         generatePetMessage();
-      }, 5000);
+      }, 2000);
 
-      // 每10秒显示一条消息
+      // 每10秒轮换一条新消息
       const intervalTimer = setInterval(() => {
         generatePetMessage();
       }, 10000);
@@ -331,7 +328,7 @@ const MainPage = ({ selectedPet }) => {
           className="pet-showcase"
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.8 }}
+          transition={{ delay: 1, duration: 1.5 }}
         >
           <div
             className="pet-avatar-large"
@@ -391,7 +388,7 @@ const MainPage = ({ selectedPet }) => {
             </motion.div>
 
             {/* Hover提示 */}
-            {isPetHovered && (
+            {/* {isPetHovered && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -413,7 +410,7 @@ const MainPage = ({ selectedPet }) => {
               >
                 点击开始对话
               </motion.div>
-            )}
+            )} */}
           </div>
 
           <motion.div

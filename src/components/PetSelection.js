@@ -56,6 +56,9 @@ const PetSelection = ({ selectedPet, setSelectedPet }) => {
   const foxVideoRef = useRef(null);
   const owlVideoRef = useRef(null);
   const patVideoRef = useRef(null);
+  
+  // 音频引用，用于跟踪当前播放的音频
+  const currentAudioRef = useRef(null);
 
   // 媒体控制函数
   const handleMediaMouseEnter = async (petId) => {
@@ -111,6 +114,9 @@ const PetSelection = ({ selectedPet, setSelectedPet }) => {
   // 本地音频播放函数
   const playLocalAudio = (petType) => {
     try {
+      // 先暂停之前的音频
+      pauseCurrentAudio();
+      
       // 根据宠物类型获取对应的本地MP3文件路径
       const audioFiles = {
         'fox': '/小狐狸选择.mp3',
@@ -121,12 +127,26 @@ const PetSelection = ({ selectedPet, setSelectedPet }) => {
       const audioSrc = audioFiles[petType];
       if (audioSrc) {
         const audio = new Audio(audioSrc);
+        currentAudioRef.current = audio; // 保存当前音频引用
         audio.play().catch(error => {
           console.error('本地音频播放失败:', error);
         });
       }
     } catch (error) {
       console.error('音频播放错误:', error);
+    }
+  };
+
+  // 暂停当前播放的音频
+  const pauseCurrentAudio = () => {
+    try {
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause();
+        currentAudioRef.current.currentTime = 0;
+        currentAudioRef.current = null;
+      }
+    } catch (error) {
+      console.error('音频暂停错误:', error);
     }
   };
 
@@ -140,6 +160,10 @@ const PetSelection = ({ selectedPet, setSelectedPet }) => {
 
   const handleStartLearning = () => {
     setShowPopup(false);
+    
+    // 暂停当前播放的音频
+    pauseCurrentAudio();
+    
     // 暂停播放所有视频
     [foxVideoRef, owlVideoRef, patVideoRef].forEach(videoRef => {
       if (videoRef.current) {
